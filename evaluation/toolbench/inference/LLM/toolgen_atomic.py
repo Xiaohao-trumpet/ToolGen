@@ -88,7 +88,7 @@ SystemPromptTokens = '''You are an AutoGPT, capable of utilizing numerous tools 
 
 def load_tool_documentation():
     # Build token api document
-    with open("data/toolenv/tools"+"/"+"tools.json", 'r') as f:
+    with open("../../../../data/toolenv/tools/tools.json", 'r') as f:
         all_tools = json.load(f)
     print(len(all_tools))
     # print(all_tools[0])
