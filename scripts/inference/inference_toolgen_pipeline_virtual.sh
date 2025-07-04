@@ -2,7 +2,7 @@ export TOOLBENCH_KEY="8PAEOpX1sITB6WUwmQSxtvV9zeZbKFC247JkcYojgNiMnfrd3L"
 #export OPENAI_KEY="Set your OpenAI key here"
 export PYTHONPATH=./
 export SERVICE_URL="http://localhost:8080/virtual"
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=0,1,2
 
 model_path="reasonwang/ToolGen-Llama-3-8B"
 indexing="Atomic"

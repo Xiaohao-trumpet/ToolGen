@@ -108,8 +108,10 @@ def main(
             ir_corpus[row.docid] = toolbench_name
         
         return ir_corpus
-        
-    data_path = f"data/retrieval/{stage}"
+
+    import os
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    data_path = f"{base_dir}/data/retrieval/{stage}"
 
     documents_df = pd.read_csv(os.path.join(data_path, 'corpus.tsv'), sep='\t')
     ir_corpus = process_retrieval_ducoment(documents_df)

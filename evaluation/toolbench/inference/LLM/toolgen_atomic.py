@@ -23,6 +23,7 @@ from unidecode import unidecode
 from fastchat.conversation import get_conv_template
 
 
+
 class AllowTokenIdsProcessor(LogitsProcessor):
     def __init__(self, allowed_token_ids: List[int]):
         self.allowed_token_ids = allowed_token_ids
@@ -85,10 +86,12 @@ SystemPromptTokens = '''You are an AutoGPT, capable of utilizing numerous tools 
 #         print(f"Added {len(virtual_tokens)} virtual tokens")
 #         return tokenizer
 
-
+import os
+base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+tools_json_path = os.path.join(base_dir, "data", "toolenv", "tools", "tools.json")
 def load_tool_documentation():
     # Build token api document
-    with open("../../../../data/toolenv/tools/tools.json", 'r') as f:
+    with open(tools_json_path, 'r') as f:
         all_tools = json.load(f)
     print(len(all_tools))
     # print(all_tools[0])

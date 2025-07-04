@@ -8,7 +8,7 @@ with open("keys.json", 'r') as f:
 toolbench_key = keys['TOOLBENCH_KEY']
 rapidapi_wrapper = RapidAPIWrapper(
     toolbench_key=toolbench_key,
-    rapidapi_key="",
+    rapidapi_key="d6c748cd39mshc5d150328ee4b65p1abd0djsn05e8cb0ecd65",
 )
 
 toolgen = ToolGen(
@@ -18,16 +18,22 @@ toolgen = ToolGen(
     tools=rapidapi_wrapper,
 )
 
+toolgen.restart()
 messages = [
     {"role": "system", "content": ""},
-    {"role": "user", "content": "I'm a football fan and I'm curious about the different team names used in different leagues and countries. Can you provide me with an extensive list of football team names and their short names? It would be great if I could access more than 7000 team names. Additionally, I would like to see the first 25 team names and their short names using the basic plan."}
+    {"role": "user", "content": "please use youtube to find a football video."}
 ]
-
-print("Starting ToolGen...")
-toolgen.restart()
-print("Calling toolgen.start()...")
 result = toolgen.start(
     single_chain_max_step=16,
-    start_messages=messages
+    start_messages=messages,
+    # streaming=False
 )
-print(f"ToolGen finished with result: {result}")
+
+# # 只有 streaming=True 时才迭代
+# if hasattr(result, '__iter__') and not isinstance(result, (str, list, dict)):
+#     print("Result is a generator, iterating...")
+#     for status in result:
+#         print("Status:", status)
+#     print("Generator iteration completed")
+# else:
+#     print(f"ToolGen finished with result: {result}")

@@ -3,10 +3,10 @@ indexing="Atomic"
 constrain="True"
 limit_to_stage_space="False"
 template="llama-3"
-
-stage="G1" # G1, G2, G3
-split="instruction" # instruction, tool, category
-
+# G1, G2, G3
+stage="G1"
+split="instruction"
+ # instruction, tool, category
 cmd="python -m evaluation.retrieval.eval_toolgen \
     --model_name_or_path ${model_name_or_path} \
     --indexing ${indexing} \
