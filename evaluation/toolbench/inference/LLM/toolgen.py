@@ -289,25 +289,51 @@ class ToolGen:
             indexing: str="Semantic",
             device: str="cuda", 
             cpu_offloading: bool=False, 
-            max_sequence_length: int=8192
+            max_sequence_length: int=8192,
+            num_gpus: int=1,
+            max_gpu_memory: str=None
         ) -> None:
         super().__init__()
         self.model_name = model_name_or_path
         self.indexing = indexing
         self.template = template
         self.max_sequence_length = max_sequence_length
+        self.num_gpus = num_gpus
         self.tokenizer = load_tokenizer(model_name_or_path, indexing=indexing)
         # Only support llama-3 currently
         self.tokenizer.eos_token = "<|eot_id|>"
         self.tokenizer.eos_token_id = 128009
         
-        self.model = AutoModelForCausalLM.from_pretrained(
-            model_name_or_path,
-            torch_dtype=torch.bfloat16,
-        )
-        self.use_gpu = (True if device == "cuda" else False)
-        if (device == "cuda" and not cpu_offloading) or device == "mps":
-            self.model.to(device)
+        # 多GPU支持
+        if device == "cuda" and num_gpus > 1:
+            # 计算每个GPU的内存分配
+            if max_gpu_memory is None:
+                from evaluation.toolbench.utils import get_gpu_memory
+                available_gpu_memory = get_gpu_memory(num_gpus)
+                max_memory = {
+                    i: str(int(available_gpu_memory[i] * 0.85)) + "GiB"
+                    for i in range(num_gpus)
+                }
+            else:
+                max_memory = {i: max_gpu_memory for i in range(num_gpus)}
+            
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name_or_path,
+                torch_dtype=torch.bfloat16,
+                device_map="auto",
+                max_memory=max_memory,
+                low_cpu_mem_usage=True
+            )
+        else:
+            # 单GPU或CPU模式
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_name_or_path,
+                torch_dtype=torch.bfloat16,
+            )
+            self.use_gpu = (True if device == "cuda" else False)
+            if (device == "cuda" and not cpu_offloading) or device == "mps":
+                self.model.to(device)
+        
         self.chatio = SimpleChatIO()
 
         self.token_to_toolbench_name, self.toolbench_name_to_token = load_toolgen_token_toobench_name_conversion(indexing=indexing)
@@ -338,8 +364,17 @@ class ToolGen:
     def generate(self, text, do_sample, temperature=0.6, restrict_actions=False, allowed_action_ids=None):
         inputs = self.tokenizer(text, return_tensors='pt')
         input_length = inputs["input_ids"].shape[1]
+        
+        # 多GPU情况下，模型已经在正确的设备上，只需要将输入移动到模型所在的设备
+        if hasattr(self.model, 'device'):
+            device = self.model.device
+        else:
+            # 如果模型没有device属性，检查第一个参数的设备
+            device = next(self.model.parameters()).device
+        
         for k, v in inputs.items():
-            inputs[k] = v.to("cuda")
+            inputs[k] = v.to(device)
+            
         if restrict_actions:
             if allowed_action_ids is None:
                 logits_processor = LogitsProcessorList([

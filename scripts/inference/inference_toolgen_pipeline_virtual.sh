@@ -1,13 +1,19 @@
-export TOOLBENCH_KEY="8PAEOpX1sITB6WUwmQSxtvV9zeZbKFC247JkcYojgNiMnfrd3L"
+export TOOLBENCH_KEY=""
 #export OPENAI_KEY="Set your OpenAI key here"
 export PYTHONPATH=./
 export SERVICE_URL="http://localhost:8080/virtual"
 export CUDA_VISIBLE_DEVICES=0,1,2
 
+# 添加调试信息
+echo "=== GPU配置信息 ==="
+echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
+python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU count: {torch.cuda.device_count()}'); [print(f'GPU {i}: {torch.cuda.get_device_name(i)}') for i in range(torch.cuda.device_count())]"
+echo "=================="
+
 model_path="reasonwang/ToolGen-Llama-3-8B"
 indexing="Atomic"
 template="llama-3"
-#
+
 #model_name="Qwen2.5-3B"
 #model_path="reasonwang/ToolGen-${model_name}"
 #indexing="Atomic"
